@@ -1,13 +1,13 @@
 package net.taobits.paramecium
 
-class World(ascii: String) {
+class World(ascii: String, val paramecium: Paramecium = Paramecium()) {
     var environment: Array<Array<Something>>
-    val paramecium: Paramecium
 
     init {
         val (parsedEnvironment, parameciumCoord)  = parse(ascii)
         environment = parsedEnvironment
-        paramecium = Paramecium(parameciumCoord)
+        paramecium.world = this
+        paramecium.coord = parameciumCoord
     }
 
     fun parse(ascii: String): Pair<Array<Array<Something>>, Coord> {
@@ -44,6 +44,13 @@ class World(ascii: String) {
             }
         }.joinToString("")
     }.joinToString("\n")
+
+    fun start() = paramecium.start()
+
+    operator fun get(coord: Coord): Something = environment[coord.y][coord.x]
+    operator fun set(coord: Coord, value: Something) {
+        environment[coord.y][coord.x] = value
+    }
 }
 
 enum class Something { WALL, FOOD, EMPTY }
