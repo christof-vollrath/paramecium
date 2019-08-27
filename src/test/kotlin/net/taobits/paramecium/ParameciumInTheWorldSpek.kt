@@ -92,7 +92,7 @@ class ParameciumInTheWorldSpek: Spek({
             }
         }
         given("a simple world with a paramecium and a smart program") {
-            val program = listOf(Condition(Direction.NORTH, Something.WALL), Move(Direction.SOUTH))
+            val program = listOf(Sense(Direction.NORTH, Something.WALL), Move(Direction.SOUTH))
             val paramecium = Paramecium(program = program)
             val world = World(asciiWorld, paramecium)
 
@@ -113,7 +113,7 @@ class ParameciumInTheWorldSpek: Spek({
         }
 
         given("a simple world with a paramecium and a another smart program") {
-            val program = listOf(Condition(Direction.NORTH, Something.EMPTY), Move(Direction.EAST))
+            val program = listOf(Sense(Direction.NORTH, Something.EMPTY), Move(Direction.EAST))
             val paramecium = Paramecium(program = program)
             val world = World(asciiWorld, paramecium)
 

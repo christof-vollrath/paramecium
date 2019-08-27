@@ -28,7 +28,7 @@ class Paramecium(var coord: Coord = Coord(0, 0), var program: Program = emptyLis
         consumeFoodAndIncrementIp()
     }
 
-    fun condition(direction: Direction, what: Something) { // Skip instruction if cell in direction is not what
+    fun sense(direction: Direction, what: Something) { // Skip instruction if cell in direction is not what
         val senseCoord = changeCoord(direction, coord)
         if (world[senseCoord] != what) ip++
         consumeFoodAndIncrementIp()
@@ -36,6 +36,7 @@ class Paramecium(var coord: Coord = Coord(0, 0), var program: Program = emptyLis
 
     fun goto(steps: Int) {
         ip += steps
+        ip %= program.size // Go round
         consumeFoodAndIncrementIp()
     }
 
@@ -67,19 +68,3 @@ class Paramecium(var coord: Coord = Coord(0, 0), var program: Program = emptyLis
 }
 
 data class Coord(val x: Int, val y: Int)
-
-abstract class Command { abstract fun execute( paramecium: Paramecium) }
-class Move(val direction: Direction) : Command() {
-    override fun execute(paramecium: Paramecium) = paramecium.move(direction)
-    override fun toString() = "Move $direction"
-}
-class Condition(val direction: Direction, val what: Something) : Command() {
-    override fun execute(paramecium: Paramecium) = paramecium.condition(direction, what)
-    override fun toString() = "Condition $direction $what"
-}
-class Goto(val steps: Int) : Command() {
-    override fun execute(paramecium: Paramecium) = paramecium.goto(steps)
-    override fun toString() = "Goto $steps"
-}
-
-enum class Direction { NORTH, EAST, SOUTH, WEST  }
