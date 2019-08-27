@@ -5,6 +5,7 @@ import org.jetbrains.spek.api.Spek
 import org.jetbrains.spek.api.dsl.describe
 import org.jetbrains.spek.api.dsl.given
 import org.jetbrains.spek.api.dsl.it
+import org.jetbrains.spek.api.dsl.on
 import org.jetbrains.spek.data_driven.data
 import org.jetbrains.spek.data_driven.on as onData
 
@@ -52,17 +53,22 @@ class ParameciumInTheWorldSpek: Spek({
             val paramecium = Paramecium(program = program)
             val world = World(asciiWorld, paramecium)
 
-            it("should move and eat") {
-                world.start()
-                world.toString() `should equal` """
-                xxxxxxxxx
-                x ......x
-                x o.x...x
-                x..xxx..x
-                x...x...x
-                x.......x
-                xxxxxxxxx
-            """.trimIndent()
+            on("start the world") {
+                it("should move and eat") {
+                    world.start()
+                    world.toString() `should equal` """
+                        xxxxxxxxx
+                        x ......x
+                        x o.x...x
+                        x..xxx..x
+                        x...x...x
+                        x.......x
+                        xxxxxxxxx
+                    """.trimIndent()
+                }
+                it("should have increased food") {
+                    paramecium.food `should equal` INITAL_FOOD - 2 * CONSUMPTION_PER_COMMAND + 2 * FOOD_PER_CELL
+                }
             }
         }
         given("a simple world with a paramecium and a program which hits the wall") {
@@ -70,17 +76,19 @@ class ParameciumInTheWorldSpek: Spek({
             val paramecium = Paramecium(program = program)
             val world = World(asciiWorld, paramecium)
 
-            it("should not move into walls") {
-                world.start()
-                world.toString() `should equal` """
-                xxxxxxxxx
-                x ......x
-                x  ox...x
-                x..xxx..x
-                x...x...x
-                x.......x
-                xxxxxxxxx
-            """.trimIndent()
+            on("start the world") {
+                it("should not move into walls") {
+                    world.start()
+                    world.toString() `should equal` """
+                        xxxxxxxxx
+                        x ......x
+                        x  ox...x
+                        x..xxx..x
+                        x...x...x
+                        x.......x
+                        xxxxxxxxx
+                    """.trimIndent()
+                }
             }
         }
         given("a simple world with a paramecium and a smart program") {
@@ -88,53 +96,81 @@ class ParameciumInTheWorldSpek: Spek({
             val paramecium = Paramecium(program = program)
             val world = World(asciiWorld, paramecium)
 
-            it("should not move into walls") {
-                world.start()
-                world.toString() `should equal` """
-                xxxxxxxxx
-                x ......x
-                xo..x...x
-                x..xxx..x
-                x...x...x
-                x.......x
-                xxxxxxxxx
-            """.trimIndent()
+            on("start the world") {
+                it("should not move into walls") {
+                    world.start()
+                    world.toString() `should equal` """
+                        xxxxxxxxx
+                        x ......x
+                        xo..x...x
+                        x..xxx..x
+                        x...x...x
+                        x.......x
+                        xxxxxxxxx
+                    """.trimIndent()
+                }
             }
         }
+
         given("a simple world with a paramecium and a another smart program") {
             val program = listOf(Condition(Direction.NORTH, Something.EMPTY), Move(Direction.EAST))
             val paramecium = Paramecium(program = program)
             val world = World(asciiWorld, paramecium)
 
-            it("should not move east because condition is false") {
-                world.start()
-                world.toString() `should equal` """
-                xxxxxxxxx
-                xo......x
-                x...x...x
-                x..xxx..x
-                x...x...x
-                x.......x
-                xxxxxxxxx
-            """.trimIndent()
+            on("start the world") {
+                it("should not move east because condition is false") {
+                    world.start()
+                    world.toString() `should equal` """
+                        xxxxxxxxx
+                        xo......x
+                        x...x...x
+                        x..xxx..x
+                        x...x...x
+                        x.......x
+                        xxxxxxxxx
+                    """.trimIndent()
+                }
             }
         }
+
         given("a simple world with a paramecium and a program with goto") {
             val program = listOf(Move(Direction.SOUTH), Goto(2), Move(Direction.EAST), Move(Direction.EAST), Move(Direction.SOUTH))
             val paramecium = Paramecium(program = program)
             val world = World(asciiWorld, paramecium)
 
-            it("should skip to moves because of the goto") {
-                world.start()
-                world.toString() `should equal` """
-                xxxxxxxxx
-                x ......x
-                x ..x...x
-                xo.xxx..x
-                x...x...x
-                x.......x
-                xxxxxxxxx
-            """.trimIndent()
+            on("start the world") {
+                it("should skip to moves because of the goto") {
+                    world.start()
+                    world.toString() `should equal` """
+                        xxxxxxxxx
+                        x ......x
+                        x ..x...x
+                        xo.xxx..x
+                        x...x...x
+                        x.......x
+                        xxxxxxxxx
+                    """.trimIndent()
+                }
+            }
+        }
+        given("a simple world with a paramecium and a program with an endless loop") {
+            val program = listOf(Move(Direction.SOUTH), Move(Direction.SOUTH), Move(Direction.NORTH), Move(Direction.NORTH), Goto(-2))
+            val paramecium = Paramecium(program = program)
+            val world = World(asciiWorld, paramecium)
+
+            on("start the world") {
+                it("should move until all food is consumed") {
+                    world.start()
+                    world.toString() `should equal` """
+                        xxxxxxxxx
+                        xo......x
+                        x ..x...x
+                        x .xxx..x
+                        x...x...x
+                        x.......x
+                        xxxxxxxxx
+                    """.trimIndent()
+                }
             }
         }
     }

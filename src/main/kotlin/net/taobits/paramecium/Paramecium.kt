@@ -2,12 +2,20 @@ package net.taobits.paramecium
 
 typealias Program = List<Command>
 
+const val INITAL_FOOD = 10
+const val CONSUMPTION_PER_COMMAND = 1
+const val FOOD_PER_CELL = 3
+
 class Paramecium(var coord: Coord = Coord(0, 0), var program: Program = emptyList()) {
     lateinit var world: World
     var ip = 0
+    var food: Int = INITAL_FOOD
 
     fun start() {
-        while (ip < program.size) program[ip].execute(this)
+        while (ip in 0 until program.size && food > 0)
+        {
+            program[ip].execute(this)
+        }
     }
 
     fun move(direction: Direction) {
@@ -17,18 +25,18 @@ class Paramecium(var coord: Coord = Coord(0, 0), var program: Program = emptyLis
             coord = nextCoord
             eat()
         }
-        ip++
+        consumeFoodAndIncrementIp()
     }
 
     fun condition(direction: Direction, what: Something) { // Skip instruction if cell in direction is not what
         val senseCoord = changeCoord(direction, coord)
         if (world[senseCoord] != what) ip++
-        ip++
+        consumeFoodAndIncrementIp()
     }
 
     fun goto(steps: Int) {
         ip += steps
-        ip++
+        consumeFoodAndIncrementIp()
     }
 
     private fun changeCoord(direction: Direction, coord: Coord): Coord {
@@ -44,7 +52,15 @@ class Paramecium(var coord: Coord = Coord(0, 0), var program: Program = emptyLis
     }
 
     private fun eat() {
-        if (world[coord] == Something.FOOD) world[coord] = Something.EMPTY
+        if (world[coord] == Something.FOOD) {
+            world[coord] = Something.EMPTY
+            food += FOOD_PER_CELL
+        }
+    }
+
+    private fun consumeFoodAndIncrementIp() {
+        food -= CONSUMPTION_PER_COMMAND
+        ip++
     }
 
 
