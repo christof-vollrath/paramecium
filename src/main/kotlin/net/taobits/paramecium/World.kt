@@ -1,6 +1,10 @@
 package net.taobits.paramecium
 
 class World(ascii: String, val paramecium: Paramecium = Paramecium()) {
+    val food: Int
+        get() = environment.map { line ->
+            line.filter { it == Something.FOOD }.count()
+        }.sum()
     var environment: Array<Array<Something>>
 
     init {
@@ -10,7 +14,7 @@ class World(ascii: String, val paramecium: Paramecium = Paramecium()) {
         paramecium.coord = parameciumCoord
     }
 
-    fun parse(ascii: String): Pair<Array<Array<Something>>, Coord> {
+    private fun parse(ascii: String): Pair<Array<Array<Something>>, Coord> {
         var foundCoord: Coord? = null
         environment = ascii.split("\n").mapIndexed { y, line ->
             line.mapIndexed { x, c ->
@@ -45,7 +49,7 @@ class World(ascii: String, val paramecium: Paramecium = Paramecium()) {
         }.joinToString("")
     }.joinToString("\n")
 
-    fun start() = paramecium.start()
+    fun start(debug: Boolean = false) = paramecium.start(debug)
 
     operator fun get(coord: Coord): Something = environment[coord.y][coord.x]
     operator fun set(coord: Coord, value: Something) {

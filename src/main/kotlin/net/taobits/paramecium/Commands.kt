@@ -24,10 +24,9 @@ enum class Direction { NORTH, EAST, SOUTH, WEST  }
 const val SEED = 123L
 
 object RandomCommandGenerator {
-    val randomGenerator = Random(SEED)
-    fun createRandomDirection(): Direction {
-        val r = randomGenerator.nextInt(4)
-        return when(r) {
+    private val randomGenerator = Random(SEED)
+    private fun createRandomDirection(): Direction {
+        return when(val r = randomGenerator.nextInt(4)) {
             0 -> Direction.NORTH
             1 -> Direction.EAST
             2 -> Direction.SOUTH
@@ -35,9 +34,8 @@ object RandomCommandGenerator {
             else -> throw IllegalStateException("Random generator for direction returned unexpected value $r")
         }
     }
-    fun createRandomSomething(): Something {
-        val r = randomGenerator.nextInt(3)
-        return when(r) {
+    private fun createRandomSomething(): Something {
+        return when(val r = randomGenerator.nextInt(3)) {
             0 -> Something.EMPTY
             1 -> Something.WALL
             2 -> Something.FOOD
@@ -45,8 +43,7 @@ object RandomCommandGenerator {
         }
     }
     fun createRandomCommand(gotoRange: Int): Command {
-        val r = randomGenerator.nextInt(3)
-        return when(r) {
+        return when(val r = randomGenerator.nextInt(3)) {
             0 -> Move(createRandomDirection())
             1 -> Sense(createRandomDirection(), createRandomSomething())
             2 -> Goto(randomGenerator.nextInt(gotoRange) + 1)

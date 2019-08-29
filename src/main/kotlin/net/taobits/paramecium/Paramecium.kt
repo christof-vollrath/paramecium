@@ -6,15 +6,21 @@ const val INITAL_FOOD = 10
 const val CONSUMPTION_PER_COMMAND = 1
 const val FOOD_PER_CELL = 3
 
-class Paramecium(var coord: Coord = Coord(0, 0), var program: Program = emptyList()) {
+data class Paramecium(var coord: Coord = Coord(0, 0), var program: Program = emptyList()) {
     lateinit var world: World
-    var ip = 0
+    private var ip = 0
     var food: Int = INITAL_FOOD
 
-    fun start() {
+    fun start(debug: Boolean = false) {
+        ip = 0
+        food = INITAL_FOOD
         while (ip in 0 until program.size && food > 0)
         {
             program[ip].execute(this)
+            if (debug) {
+                println(world)
+                println()
+            }
         }
     }
 
@@ -41,7 +47,7 @@ class Paramecium(var coord: Coord = Coord(0, 0), var program: Program = emptyLis
     }
 
     private fun changeCoord(direction: Direction, coord: Coord): Coord {
-        val nextCoord = with(coord) {
+        return with(coord) {
             when (direction) {
                 Direction.NORTH -> Coord(x, y - 1)
                 Direction.EAST -> Coord(x + 1, y)
@@ -49,7 +55,6 @@ class Paramecium(var coord: Coord = Coord(0, 0), var program: Program = emptyLis
                 Direction.WEST -> Coord(x - 1, y)
             }
         }
-        return nextCoord
     }
 
     private fun eat() {
@@ -63,8 +68,6 @@ class Paramecium(var coord: Coord = Coord(0, 0), var program: Program = emptyLis
         food -= CONSUMPTION_PER_COMMAND
         ip++
     }
-
-
 }
 
 data class Coord(val x: Int, val y: Int)
