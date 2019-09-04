@@ -52,7 +52,7 @@ data class Paramecium(var coord: Coord = Coord(0, 0), var program: Program = emp
     override fun toString() = """
         energy: $energy
         pos: $coord
-        program: $program
+        program: ${program.toFormattedString()}
     """.trimIndent()
 }
 

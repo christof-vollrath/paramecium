@@ -24,9 +24,9 @@ class ProgrammProcessor(val program: Program) {
         programCounter = line
     }
 
-    override fun toString() = program.toString()
+    override fun toString() = program.toFormattedString()
 }
 
-fun Program.toString() = mapIndexed { line, cmd ->
+fun Program.toFormattedString() = mapIndexed { line, cmd ->
     println("$line $cmd")
-}
+}.joinToString("")
