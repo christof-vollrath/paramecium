@@ -20,7 +20,7 @@ class EvolutionSpek: Spek({
             """.trimIndent()
     var fitness0: Double? = null
     describe("Strategy 0") {
-        it("should find an efficent paramecium") {
+        it("should find an efficent paramecium just by creating random paramecia without generations and mutation") {
             val programSize = 20
             val createIndividual = {
                 val program = (1..programSize).map {

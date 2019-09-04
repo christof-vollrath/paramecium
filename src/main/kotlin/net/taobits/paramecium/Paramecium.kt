@@ -1,27 +1,16 @@
 package net.taobits.paramecium
 
-typealias Program = List<Command>
-
-const val INITAL_FOOD = 10
+const val INITAL_ENERGY = 10
 const val CONSUMPTION_PER_COMMAND = 1
-const val FOOD_PER_CELL = 3
+const val ENERGY_PER_FOOD = 3
 
 data class Paramecium(var coord: Coord = Coord(0, 0), var program: Program = emptyList()) {
     lateinit var world: World
-    private var ip = 0
-    var food: Int = INITAL_FOOD
+    var energy: Int = INITAL_ENERGY
 
-    fun start(debug: Boolean = false) {
-        ip = 0
-        food = INITAL_FOOD
-        while (ip in 0 until program.size && food > 0)
-        {
-            program[ip].execute(this)
-            if (debug) {
-                println(world)
-                println()
-            }
-        }
+    fun live(debug: Boolean = false) {
+        energy = INITAL_ENERGY
+        ProgrammProcessor(program).execute(this, debug)
     }
 
     fun move(direction: Direction) {
@@ -30,20 +19,12 @@ data class Paramecium(var coord: Coord = Coord(0, 0), var program: Program = emp
         if (movePossible) {
             coord = nextCoord
             eat()
-        }
-        consumeFoodAndIncrementIp()
+        } else consumeEnergy() // Extra penality when hitting the wall
     }
 
-    fun sense(direction: Direction, what: Something) { // Skip instruction if cell in direction is not what
+    fun sense(direction: Direction, what: Something): Boolean { // Skip instruction if cell in direction is not what
         val senseCoord = changeCoord(direction, coord)
-        if (world[senseCoord] != what) ip++
-        consumeFoodAndIncrementIp()
-    }
-
-    fun goto(steps: Int) {
-        ip += steps
-        ip %= program.size // Go round
-        consumeFoodAndIncrementIp()
+        return world[senseCoord] == what
     }
 
     private fun changeCoord(direction: Direction, coord: Coord): Coord {
@@ -60,14 +41,19 @@ data class Paramecium(var coord: Coord = Coord(0, 0), var program: Program = emp
     private fun eat() {
         if (world[coord] == Something.FOOD) {
             world[coord] = Something.EMPTY
-            food += FOOD_PER_CELL
+            energy += ENERGY_PER_FOOD
         }
     }
 
-    private fun consumeFoodAndIncrementIp() {
-        food -= CONSUMPTION_PER_COMMAND
-        ip++
+    fun consumeEnergy() {
+        energy -= CONSUMPTION_PER_COMMAND
     }
+
+    override fun toString() = """
+        energy: $energy
+        pos: $coord
+        program: $program
+    """.trimIndent()
 }
 
 data class Coord(val x: Int, val y: Int)

@@ -40,7 +40,7 @@ class CommandsSpek: Spek({
             }
             it("should have created goto commands in range") {
                 val moveCommands = randomCommands.filterIsInstance<Goto>()
-                val groupedMoves = moveCommands.groupBy { it.steps }
+                val groupedMoves = moveCommands.groupBy { it.line }
                 groupedMoves.size `should equal` 10 // 1..10
             }
         }

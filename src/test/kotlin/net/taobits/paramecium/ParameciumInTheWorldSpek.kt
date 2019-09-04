@@ -30,7 +30,7 @@ class ParameciumInTheWorldSpek: Spek({
             onData("move paramecium by command %s", with = *testData) { command, expectedCoord ->
                 val paramecium = Paramecium()
                 World(asciiWorld, paramecium) // Paramecium must be part of a world to be able to move
-                command.execute(paramecium)
+                command.execute(ProgrammProcessor(emptyList()), paramecium)
                 it("should be moved to $expectedCoord") {
                     paramecium.coord `should equal` expectedCoord
                 }
@@ -67,7 +67,7 @@ class ParameciumInTheWorldSpek: Spek({
                     """.trimIndent()
                 }
                 it("should have increased food") {
-                    paramecium.food `should equal` INITAL_FOOD - 2 * CONSUMPTION_PER_COMMAND + 2 * FOOD_PER_CELL
+                    paramecium.energy `should equal` INITAL_ENERGY - 2 * CONSUMPTION_PER_COMMAND + 2 * ENERGY_PER_FOOD
                 }
             }
         }
@@ -134,7 +134,7 @@ class ParameciumInTheWorldSpek: Spek({
         }
 
         given("a simple world with a paramecium and a program with goto") {
-            val program = listOf(Move(Direction.SOUTH), Goto(2), Move(Direction.EAST), Move(Direction.EAST), Move(Direction.SOUTH))
+            val program = listOf(Move(Direction.SOUTH), Goto(4), Move(Direction.EAST), Move(Direction.EAST), Move(Direction.SOUTH))
             val paramecium = Paramecium(program = program)
             val world = World(asciiWorld, paramecium)
 

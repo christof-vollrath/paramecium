@@ -3,20 +3,22 @@ package net.taobits.paramecium
 import java.lang.IllegalStateException
 import java.util.*
 
-
-abstract class Command { abstract fun execute( paramecium: Paramecium) }
-
+abstract class Command { abstract fun execute(processor: ProgrammProcessor, paramecium: Paramecium) }
 class Move(val direction: Direction) : Command() {
-    override fun execute(paramecium: Paramecium) = paramecium.move(direction)
+    override fun execute(processor: ProgrammProcessor, paramecium: Paramecium) = paramecium.move(direction)
     override fun toString() = "Move $direction"
 }
 class Sense(val direction: Direction, val what: Something) : Command() {
-    override fun execute(paramecium: Paramecium) = paramecium.sense(direction, what)
+    override fun execute(processor: ProgrammProcessor, paramecium: Paramecium) {
+        val sensed = paramecium.sense(direction, what)
+        if (! sensed) processor.goto(1) // Skip next command
+    }
     override fun toString() = "Condition $direction $what"
 }
-class Goto(val steps: Int) : Command() {
-    override fun execute(paramecium: Paramecium) = paramecium.goto(steps)
-    override fun toString() = "Goto $steps"
+class Goto(val line: Int) : Command() {
+    override fun execute(processor: ProgrammProcessor, paramecium: Paramecium) = processor.goto(line - 1)
+        // Subtract 1 because program counter will be incremented after each command execution
+    override fun toString() = "Goto $line"
 }
 
 enum class Direction { NORTH, EAST, SOUTH, WEST  }
@@ -42,11 +44,13 @@ object RandomCommandGenerator {
             else -> throw IllegalStateException("Random generator for something returned unexpected value $r")
         }
     }
+    private fun createRandomGotoSteps(gotoRange: Int): Int =randomGenerator.nextInt(gotoRange) + 1
+
     fun createRandomCommand(gotoRange: Int): Command {
         return when(val r = randomGenerator.nextInt(3)) {
             0 -> Move(createRandomDirection())
             1 -> Sense(createRandomDirection(), createRandomSomething())
-            2 -> Goto(randomGenerator.nextInt(gotoRange) + 1)
+            2 -> Goto(createRandomGotoSteps(gotoRange))
             else -> throw IllegalStateException("Random generator for command returned unexpected value $r")
         }
     }

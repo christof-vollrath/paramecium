@@ -49,7 +49,7 @@ class World(ascii: String, val paramecium: Paramecium = Paramecium()) {
         }.joinToString("")
     }.joinToString("\n")
 
-    fun start(debug: Boolean = false) = paramecium.start(debug)
+    fun start(debug: Boolean = false) = paramecium.live(debug)
 
     operator fun get(coord: Coord): Something = environment[coord.y][coord.x]
     operator fun set(coord: Coord, value: Something) {
