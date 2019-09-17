@@ -4,13 +4,14 @@ const val INITAL_ENERGY = 10
 const val CONSUMPTION_PER_COMMAND = 1
 const val ENERGY_PER_FOOD = 3
 
-data class Paramecium(var coord: Coord = Coord(0, 0), var program: Program = emptyList()) {
+data class Paramecium(var coord: Coord = Coord(0, 0), val program: Program = emptyList()) {
     lateinit var world: World
     var energy: Int = INITAL_ENERGY
+    val programmProcessor = ProgrammProcessor(program)
 
     fun live(debug: Boolean = false) {
         energy = INITAL_ENERGY
-        ProgrammProcessor(program).execute(this, debug)
+        programmProcessor.execute(this, debug)
     }
 
     fun move(direction: Direction) {
@@ -19,7 +20,7 @@ data class Paramecium(var coord: Coord = Coord(0, 0), var program: Program = emp
         if (movePossible) {
             coord = nextCoord
             eat()
-        } else consumeEnergy() // Extra penality when hitting the wall
+        } else repeat(2) { consumeEnergy() } // Extra penality when hitting the wall
     }
 
     fun sense(direction: Direction, what: Something): Boolean { // Skip instruction if cell in direction is not what
@@ -52,8 +53,9 @@ data class Paramecium(var coord: Coord = Coord(0, 0), var program: Program = emp
     override fun toString() = """
         energy: $energy
         pos: $coord
-        program: ${program.toFormattedString()}
-    """.trimIndent()
+        program: 
+        
+        """.trimIndent() + programmProcessor
 }
 
 data class Coord(val x: Int, val y: Int)

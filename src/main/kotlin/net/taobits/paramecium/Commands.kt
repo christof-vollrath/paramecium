@@ -11,7 +11,7 @@ class Move(val direction: Direction) : Command() {
 class Sense(val direction: Direction, val what: Something) : Command() {
     override fun execute(processor: ProgrammProcessor, paramecium: Paramecium) {
         val sensed = paramecium.sense(direction, what)
-        if (! sensed) processor.goto(1) // Skip next command
+        if (! sensed) processor.goto(processor.programCounter + 1) // Skip next command
     }
     override fun toString() = "Condition $direction $what"
 }

@@ -1,6 +1,7 @@
 package net.taobits.paramecium
 
 import org.amshove.kluent.`should be greater than`
+import org.amshove.kluent.`should be less than`
 import org.jetbrains.spek.api.Spek
 import org.jetbrains.spek.api.dsl.describe
 import org.jetbrains.spek.api.dsl.it
@@ -19,7 +20,7 @@ class EvolutionSpek: Spek({
                 xxxxxxxxx
             """.trimIndent()
     var fitness0: Double? = null
-    describe("Strategy 0") {
+    describe("Strategy 0 - only one generation") {
         it("should find an efficent paramecium just by creating random paramecia without generations and mutation") {
             val programSize = 20
             val createIndividual = {
@@ -30,19 +31,15 @@ class EvolutionSpek: Spek({
             }
             val fitness = { paramecium: Paramecium ->
                 val world = World(asciiWorld, paramecium)
-                val startFood = world.food
                 world.start()
-                val eaten = startFood - world.food
-                eaten.toDouble()
+                paramecium.programmProcessor.ticks.toDouble()
             }
             val result = evolve(EvolutionConfiguration(createIndividual = createIndividual, fitness = fitness, mutate = {it}, generations = 1))
             result.fitness `should be greater than` 0.0
-            fitness0 = result.fitness
             val world = World(asciiWorld, result.best)
-            val startFood = world.food
             world.start(debug = true)
+            fitness0 = result.fitness
             println(result.best)
-            println("eaten=${startFood - world.food}")
         }
     }
     describe("Strategy 1") {
@@ -56,10 +53,8 @@ class EvolutionSpek: Spek({
             }
             val fitness = { paramecium: Paramecium ->
                 val world = World(asciiWorld, paramecium)
-                val startFood = world.food
                 world.start()
-                val eaten = startFood - world.food
-                eaten.toDouble()
+                paramecium.programmProcessor.ticks.toDouble()
             }
             val mutate = { paramecium: Paramecium ->
                 val mutatedProgram = paramecium.program.map {command ->
@@ -71,46 +66,18 @@ class EvolutionSpek: Spek({
                 }
                 paramecium.copy(program = mutatedProgram)
             }
-            val result = evolve(EvolutionConfiguration(createIndividual = createIndividual, fitness = fitness, mutate = mutate, generations = 100))
+            val evolutionConfiguration = EvolutionConfiguration(
+                    populationSize = 2000,
+                    generations = 1000,
+                    createIndividual = createIndividual,
+                    fitness = fitness,
+                    mutate = mutate)
+            val result = evolve(evolutionConfiguration)
             result.fitness `should be greater than` 0.0
-            result.fitness `should be greater than` fitness0!!
             val world = World(asciiWorld, result.best)
-            val startFood = world.food
             world.start(debug = true)
+            if (fitness0 != null) result.fitness `should be greater than` fitness0!! // compare to earlier results
             println(result.best)
-            println("eaten=${startFood - world.food}")
         }
     }
 })
-
-typealias CreateIndividual<T>  = () -> T
-typealias Fitness<T> = (T) -> Double
-typealias Mutate<T> = (T) -> T
-
-data class EvolutionConfiguration<T>(
-        val populationSize: Int = 10_000,
-        val createIndividual: CreateIndividual<T>,
-        val mutate: Mutate<T>,
-        val fitness: Fitness<T>,
-        val generations: Int = 1000
-)
-data class EvolutionResult<T>(val best: T, val fitness: Double)
-
-fun <T>evolve(evolutionConfiguration: EvolutionConfiguration<T>): EvolutionResult<T> {
-    with (evolutionConfiguration) {
-        var population = (1..evolutionConfiguration.populationSize).map {
-            createIndividual()
-        }
-        var i = 1
-        while (true) {
-            val result = population.map { paramecium ->
-                paramecium to fitness(paramecium)
-            }
-            val bestResult = result.maxBy { it.second }!!
-            if (i == generations)
-                return EvolutionResult(bestResult.first, bestResult.second)
-            population = List(populationSize) { bestResult.first }.map { mutate(it) }
-            i++
-        }
-    }
-}

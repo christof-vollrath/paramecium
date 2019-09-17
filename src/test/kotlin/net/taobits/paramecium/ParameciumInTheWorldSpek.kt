@@ -7,6 +7,7 @@ import org.jetbrains.spek.api.dsl.given
 import org.jetbrains.spek.api.dsl.it
 import org.jetbrains.spek.api.dsl.on
 import org.jetbrains.spek.data_driven.data
+import kotlin.test.expect
 import org.jetbrains.spek.data_driven.on as onData
 
 class ParameciumInTheWorldSpek: Spek({
@@ -23,7 +24,7 @@ class ParameciumInTheWorldSpek: Spek({
                     //  | direction            | result
                     //--|----------------------|------------------------
                     data( Move(Direction.NORTH), Coord(2, 1)),
-                    data( Move(Direction.EAST), Coord(3, 2)),
+                    data( Move(Direction.EAST),  Coord(3, 2)),
                     data( Move(Direction.SOUTH), Coord(2, 3)),
                     data( Move(Direction.WEST), Coord(1, 2))
             )
@@ -66,7 +67,10 @@ class ParameciumInTheWorldSpek: Spek({
                         xxxxxxxxx
                     """.trimIndent()
                 }
-                it("should have increased food") {
+                it("should have passed 2 ticks") {
+                    paramecium.programmProcessor.ticks `should equal` 2
+                }
+                it("should have increased and consumed food") {
                     paramecium.energy `should equal` INITAL_ENERGY - 2 * CONSUMPTION_PER_COMMAND + 2 * ENERGY_PER_FOOD
                 }
             }
@@ -89,6 +93,12 @@ class ParameciumInTheWorldSpek: Spek({
                         xxxxxxxxx
                     """.trimIndent()
                 }
+                it("should have passed 4 ticks") {
+                    paramecium.programmProcessor.ticks `should equal` 4
+                }
+                it("should have increased and consumed food but more for hitting the wall") {
+                    paramecium.energy `should equal` INITAL_ENERGY - 6 * CONSUMPTION_PER_COMMAND + 3 * ENERGY_PER_FOOD
+                }
             }
         }
         given("a simple world with a paramecium and a smart program") {
@@ -110,6 +120,12 @@ class ParameciumInTheWorldSpek: Spek({
                     """.trimIndent()
                 }
             }
+            it("should have passed 2 ticks") {
+                paramecium.programmProcessor.ticks `should equal` 2
+            }
+            it("should have increased and consumed food") {
+                paramecium.energy `should equal` INITAL_ENERGY - 2 * CONSUMPTION_PER_COMMAND + 1 * ENERGY_PER_FOOD
+            }
         }
 
         given("a simple world with a paramecium and a another smart program") {
@@ -129,6 +145,12 @@ class ParameciumInTheWorldSpek: Spek({
                         x.......x
                         xxxxxxxxx
                     """.trimIndent()
+                }
+                it("should have passed 1 tick") {
+                    paramecium.programmProcessor.ticks `should equal` 1
+                }
+                it("should have increased and consumed food") {
+                    paramecium.energy `should equal` INITAL_ENERGY - 1 * CONSUMPTION_PER_COMMAND + 0 * ENERGY_PER_FOOD
                 }
             }
         }
@@ -151,9 +173,41 @@ class ParameciumInTheWorldSpek: Spek({
                         xxxxxxxxx
                     """.trimIndent()
                 }
+                it("should have passed 3 ticks") {
+                    paramecium.programmProcessor.ticks `should equal` 3
+                }
+                it("should have increased and consumed food") {
+                    paramecium.energy `should equal` INITAL_ENERGY - 3 * CONSUMPTION_PER_COMMAND + 2 * ENERGY_PER_FOOD
+                }
             }
         }
         given("a simple world with a paramecium and a program with an endless loop") {
+            val program = listOf(Move(Direction.SOUTH), Move(Direction.SOUTH), Move(Direction.NORTH), Move(Direction.NORTH), Goto(0))
+            val paramecium = Paramecium(program = program)
+            val world = World(asciiWorld, paramecium)
+
+            on("start the world") {
+                it("should move until all food is consumed") {
+                    world.start()
+                    world.toString() `should equal` """
+                        xxxxxxxxx
+                        x ......x
+                        xo..x...x
+                        x .xxx..x
+                        x...x...x
+                        x.......x
+                        xxxxxxxxx
+                    """.trimIndent()
+                }
+                it("should have consumed all food") {
+                    paramecium.energy `should equal` 0
+                }
+                it("should have passed 16 ticks") {
+                    paramecium.programmProcessor.ticks `should equal` 16
+                }
+            }
+        }
+        given("a simple world with a paramecium and a wrong goto") {
             val program = listOf(Move(Direction.SOUTH), Move(Direction.SOUTH), Move(Direction.NORTH), Move(Direction.NORTH), Goto(-2))
             val paramecium = Paramecium(program = program)
             val world = World(asciiWorld, paramecium)
@@ -170,6 +224,12 @@ class ParameciumInTheWorldSpek: Spek({
                         x.......x
                         xxxxxxxxx
                     """.trimIndent()
+                }
+                it("should have passed 4 ticks") {
+                    paramecium.programmProcessor.ticks `should equal` 5
+                }
+                it("should have increased and consumed food") {
+                    paramecium.energy `should equal` INITAL_ENERGY - 5 * CONSUMPTION_PER_COMMAND + 2 * ENERGY_PER_FOOD
                 }
             }
         }
