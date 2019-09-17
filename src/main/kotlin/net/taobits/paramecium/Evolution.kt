@@ -1,5 +1,9 @@
 package net.taobits.paramecium
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
+
 typealias CreateIndividual<T>  = () -> T
 typealias Fitness<T> = (T) -> Double
 typealias Mutate<T> = (T) -> T
@@ -21,7 +25,7 @@ fun <T> evolve(evolutionConfiguration: EvolutionConfiguration<T>, debug: Boolean
         }
         var generation = 1
         while (true) {
-            val result = population.map { paramecium ->
+            val result = population.pmap { paramecium ->
                 paramecium to fitness(paramecium)
             }
             val sortedResults = result.sortedByDescending { it.second }
@@ -40,6 +44,10 @@ fun <T> evolve(evolutionConfiguration: EvolutionConfiguration<T>, debug: Boolean
 }
 
 fun <T> filledListOf(size: Int, subList: List<T>) =
-        List(size) { i ->
-            subList[i % subList.size]
-        }
+    List(size) { i ->
+        subList[i % subList.size]
+    }
+
+fun <A, B>List<A>.pmap(f: suspend (A) -> B): List<B> = runBlocking {
+    map { async(Dispatchers.Default) { f(it) } }.map { it.await() }
+}
